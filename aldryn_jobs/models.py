@@ -74,9 +74,11 @@ JobApplicationFileField = partial(
 class JobCategory(TranslatedAutoSlugifyMixin,
                   TranslationHelperMixin,
                   TranslatableModel):
+    # rename it to title
     slug_source_field_name = 'name'
 
     translations = TranslatedFields(
+        # rename it to title
         name=models.CharField(_('name'), max_length=255),
         slug=models.SlugField(
             _('slug'), max_length=255, blank=True,
@@ -84,6 +86,11 @@ class JobCategory(TranslatedAutoSlugifyMixin,
                         'will change. Clear it to have the slug re-created.'))
     )
 
+    # add contact info
+    # add field school name (NonNullable)
+    # add field school contact email (NonNullable)
+    # add field school address (NonNullable)
+    # add field school city (NonNullable)
     supervisors = models.ManyToManyField(
         getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), verbose_name=_('supervisors'),
         # FIXME: This is mis-named should be "job_categories"?
@@ -101,6 +108,7 @@ class JobCategory(TranslatedAutoSlugifyMixin,
     objects = AppHookConfigTranslatableManager()
 
     class Meta:
+        # rename it to School
         verbose_name = _('job category')
         verbose_name_plural = _('job categories')
         ordering = ['ordering']
@@ -159,15 +167,23 @@ class JobOpening(TranslatedAutoSlugifyMixin,
             unique=False, db_index=False,
             help_text=_('Auto-generated. Used in the URL. If changed, the URL '
                         'will change. Clear it to have the slug re-created.')),
+        # update this and make it non-nullable
         lead_in=HTMLField(
             _('short description'), blank=True,
             help_text=_('This text will be displayed in lists.'))
     )
-
+    # add a field thumbnail(FilerImageField)
+    # add field position
+    # add field employment
+    # add field hours
+    # add field start_date
     content = PlaceholderField('Job Opening Content')
+    # rename this to school, since the verbose name for this field is called Schools, we just
+    # need to change the verbose name here
     category = models.ForeignKey(JobCategory, verbose_name=_('category'), related_name='jobs')
     created = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(_('active?'), default=True)
+    # make it non-nullable
     publication_start = models.DateTimeField(_('published since'), null=True, blank=True)
     publication_end = models.DateTimeField(_('published until'), null=True, blank=True)
     can_apply = models.BooleanField(_('viewer can apply for the job?'), default=True)
@@ -235,6 +251,7 @@ class JobOpening(TranslatedAutoSlugifyMixin,
 @python_2_unicode_compatible
 class JobApplication(models.Model):
     # FIXME: Gender is not the same as salutation.
+    # remove this to make it gender neutral
     MALE = 'male'
     FEMALE = 'female'
 
@@ -244,6 +261,7 @@ class JobApplication(models.Model):
     )
 
     job_opening = models.ForeignKey(JobOpening, related_name='applications')
+    # remove this so as to make it gender neutral
     salutation = models.CharField(_('salutation'), max_length=20, blank=True, choices=SALUTATION_CHOICES, default=MALE)
     first_name = models.CharField(_('first name'), max_length=20)
     last_name = models.CharField(_('last name'), max_length=20)
@@ -252,6 +270,7 @@ class JobApplication(models.Model):
     created = models.DateTimeField(_('created'), auto_now_add=True)
     is_rejected = models.BooleanField(_('rejected?'), default=False)
     rejection_date = models.DateTimeField(_('rejection date'), null=True, blank=True)
+    # add FileField (NonNullable) so that the user is able to upload
 
     class Meta:
         ordering = ['-created']
